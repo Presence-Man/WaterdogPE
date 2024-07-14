@@ -1,0 +1,10 @@
+name: "Presence-Man"
+version: "1.0.0"
+api: [ "2.0.0" ]
+main: xxAROX.PresenceMan.PowerNukkitX.PresenceMan
+description: "Presence-Man client for powernukkitx to support this server in discord rich-presences."
+website: "https://github.com/Presence-Man"
+authors:
+  - "xxAROX"
+  - "KeksDev"
+prefix: "Presence-Man"
