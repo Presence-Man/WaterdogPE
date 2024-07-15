@@ -14,40 +14,56 @@
 
 package xxAROX.PresenceMan.WaterdogPE;
 
+import dev.waterdog.waterdogpe.ProxyServer;
 import dev.waterdog.waterdogpe.event.defaults.InitialServerConnectedEvent;
 import dev.waterdog.waterdogpe.event.defaults.PlayerDisconnectedEvent;
+import dev.waterdog.waterdogpe.event.defaults.TransferCompleteEvent;
 import dev.waterdog.waterdogpe.network.PacketDirection;
+import dev.waterdog.waterdogpe.player.ProxiedPlayer;
 import org.cloudburstmc.protocol.bedrock.data.skin.ImageData;
 import org.cloudburstmc.protocol.bedrock.data.skin.SerializedSkin;
 import org.cloudburstmc.protocol.bedrock.packet.PlayerSkinPacket;
 import xxAROX.PresenceMan.WaterdogPE.utils.Utils;
 
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 
 public final class EventListener {
+    private static boolean registered = false;
+    public static void register() {
+        if (registered) return;
+        registered = true;
+        ProxyServer.getInstance().getEventManager().subscribe(InitialServerConnectedEvent.class, EventListener::InitialServerConnectedEvent);
+        ProxyServer.getInstance().getEventManager().subscribe(TransferCompleteEvent.class, EventListener::TransferCompleteEvent);
+        ProxyServer.getInstance().getEventManager().subscribe(PlayerDisconnectedEvent.class, EventListener::PlayerDisconnectedEvent);
+    }
 
+    private static final HashMap<String, Long> cooldowns = new HashMap<>();
     public static void InitialServerConnectedEvent(InitialServerConnectedEvent event){
         if (Utils.isFromSameHost(event.getPlayer().getAddress().getAddress())) return;
-        if (!PresenceMan.enable_default) return;
+        if (!event.getPlayer().getLoginData().getClientData().get("PersonaSkin").getAsBoolean()) PresenceMan.save_skin(event.getPlayer(), SerializedSkin.builder().skinData(ImageData.of(event.getPlayer().getLoginData().getClientData().get("SkinData").getAsString().getBytes(StandardCharsets.UTF_8))).build());
+        PresenceMan.setActivity(event.getPlayer(), event.getServerInfo());
 
-        var persona = event.getPlayer().getLoginData().getClientData().get("PersonaSkin").getAsBoolean();
-        if (!persona && PresenceMan.update_skin) {
-            var skin = SerializedSkin.builder().skinData(ImageData.of(event.getPlayer().getLoginData().getClientData().get("SkinData").getAsString().getBytes(StandardCharsets.UTF_8))).build();
-            PresenceMan.save_skin(event.getPlayer(), skin);
-        }
-        PresenceMan.setActivity(event.getPlayer(), PresenceMan.default_activity);
-
-
+        var cooldown = 5;
         event.getPlayer().getPluginPacketHandlers().add((bedrockPacket, packetDirection) -> {
-            if (packetDirection.equals(PacketDirection.FROM_USER) && bedrockPacket instanceof PlayerSkinPacket playerSkinPacket) // TODO: cooldown 5sec
-                PresenceMan.save_skin(event.getPlayer(), playerSkinPacket.getSkin());
+            ProxiedPlayer player = event.getPlayer();
+            if (packetDirection.equals(PacketDirection.FROM_USER) && bedrockPacket instanceof PlayerSkinPacket playerSkinPacket) {
+                if (cooldowns.containsKey(player.getXuid()) && cooldowns.get(player.getXuid()) <= System.currentTimeMillis()) cooldowns.remove(player.getXuid());
+                if (!cooldowns.containsKey(player.getXuid())) {
+                    cooldowns.put(player.getXuid(), System.currentTimeMillis() +(1000 *cooldown));
+                    PresenceMan.save_skin(player, playerSkinPacket.getSkin());
+                }
+            }
             return null;
         });
     }
-
-    public void PlayerQuitEvent(PlayerDisconnectedEvent event){
+    public static void TransferCompleteEvent(TransferCompleteEvent event){
         if (Utils.isFromSameHost(event.getPlayer().getAddress().getAddress())) return;
-        PresenceMan.presences.remove(event.getPlayer().getXuid());
+        if (!event.isCancelled() && event.getTargetServer() != null) PresenceMan.setActivity(event.getPlayer(), event.getTargetServer());
+    }
+
+    public static void PlayerDisconnectedEvent(PlayerDisconnectedEvent event){
+        if (Utils.isFromSameHost(event.getPlayer().getAddress().getAddress())) return;
         PresenceMan.offline(event.getPlayer());
     }
 }

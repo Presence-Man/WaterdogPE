@@ -1,8 +1,8 @@
 name: "Presence-Man"
 version: "1.0.0"
 api: [ "2.0.0" ]
-main: xxAROX.PresenceMan.PowerNukkitX.PresenceMan
-description: "Presence-Man client for WDPE to support this proxy-network in discord rich-presences."
+main: xxAROX.PresenceMan.WaterdogPE.PresenceMan
+description: "Presence-Man client for WaterdogPE to support this proxy-network in discord rich-presences."
 website: "https://github.com/Presence-Man"
 authors:
   - "xxAROX"

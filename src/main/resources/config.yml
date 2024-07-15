@@ -2,13 +2,4 @@
 token: ~
 client_id: "1133823892486623344"
 
-servers: # TODO: wdpe config server -> Display Server Name
-  lobby-1: "Lobby-1"
-
-# Default presence configuration:
-default_presence:
-  enabled: true
-  state: "Playing {server} on {network}"
-  details: ""
-  large_image_key: "presence-man"
-  large_image_text: "{App.name} - v{App.version}"
+# See more in ./server-presences.json

@@ -17,16 +17,16 @@ package xxAROX.PresenceMan.WaterdogPE;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import dev.waterdog.waterdogpe.ProxyServer;
-import dev.waterdog.waterdogpe.event.defaults.InitialServerConnectedEvent;
+import dev.waterdog.waterdogpe.network.serverinfo.ServerInfo;
 import dev.waterdog.waterdogpe.player.ProxiedPlayer;
 import dev.waterdog.waterdogpe.plugin.Plugin;
 import dev.waterdog.waterdogpe.utils.config.Configuration;
 import lombok.NonNull;
 import org.cloudburstmc.protocol.bedrock.data.skin.SerializedSkin;
-import xxAROX.PresenceMan.WaterdogPE.entity.ActivityType;
 import xxAROX.PresenceMan.WaterdogPE.entity.ApiActivity;
 import xxAROX.PresenceMan.WaterdogPE.entity.ApiRequest;
 import xxAROX.PresenceMan.WaterdogPE.entity.Gateway;
+import xxAROX.PresenceMan.WaterdogPE.entity.ServerPresence;
 import xxAROX.PresenceMan.WaterdogPE.tasks.async.BackendRequest;
 import xxAROX.PresenceMan.WaterdogPE.tasks.async.FetchGatewayInformationTask;
 import xxAROX.PresenceMan.WaterdogPE.tasks.async.PerformUpdateTask;
@@ -34,7 +34,12 @@ import xxAROX.PresenceMan.WaterdogPE.utils.SkinUtils;
 import xxAROX.PresenceMan.WaterdogPE.utils.Utils;
 import xxAROX.WebRequester.WebRequester;
 
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public final class PresenceMan extends Plugin {
@@ -46,12 +51,10 @@ public final class PresenceMan extends Plugin {
 
     private static String token = "undefined";
     public static String client_id = null;
-    public static String server = "undefined";
-    public static Boolean enable_default = false;
-    public static Boolean update_skin = false;
+    public static List<ServerPresence> server_presences = new ArrayList<>();
 
     public static Map<String, ApiActivity> presences = new HashMap<>();
-    public static ApiActivity default_activity;
+    @Deprecated public static ApiActivity default_activity;
 
     @Override
     public void onStartup() {
@@ -59,31 +62,21 @@ public final class PresenceMan extends Plugin {
         instance = this;
         saveResource("README.md");
         saveResource("config.yml");
+        try {
+            var filename = "server-presences.json";
+            saveResource(filename);
+            server_presences = ServerPresence.load(new Gson().fromJson(new InputStreamReader(Files.newInputStream(getDataFolder().toPath().resolve(filename))), JsonObject.class));
+        } catch (IOException e) {
+            getLogger().error("Error while loading server-presences: ", e);
+        }
 
         Configuration config = this.getConfig();
         token = (String) Utils.getconfigvalue(config, "token");
         client_id = (String) Utils.getconfigvalue(config, "client_id", "", client_id);
-        server = (String) Utils.getconfigvalue(config, "server", "", server);
-        update_skin = (Boolean) Utils.getconfigvalue(config, "update_skin", "", update_skin);
-
-        enable_default = (Boolean) Utils.getconfigvalue(config, "default_presence.enabled", "DEFAULT_ENABLED", enable_default);
-        String DEFAULT_STATE = (String) Utils.getconfigvalue(config, "default_presence.state", "DEFAULT_STATE", "Playing {server} on {network}");
-        String DEFAULT_DETAILS = (String) Utils.getconfigvalue(config, "default_presence.details", "DEFAULT_DETAILS", "");
-        String DEFAULT_LARGE_IMAGE_KEY = (String) Utils.getconfigvalue(config, "default_presence.large_image_key", "DEFAULT_LARGE_IMAGE_KEY", "");
-        String DEFAULT_LARGE_IMAGE_TEXT = (String) Utils.getconfigvalue(config, "default_presence.large_image_text", "DEFAULT_LARGE_IMAGE_TEXT", "{App.name} - v{App.version}");
-
-        default_activity = new ApiActivity(
-                ActivityType.PLAYING,
-                DEFAULT_STATE,
-                DEFAULT_DETAILS,
-                null,
-                DEFAULT_LARGE_IMAGE_KEY,
-                DEFAULT_LARGE_IMAGE_TEXT
-        );
     }
     public static boolean running = false;
     @Override public void onEnable() {
-        getProxy().getEventManager().subscribe(InitialServerConnectedEvent.class, EventListener::InitialServerConnectedEvent);
+        EventListener.register();
         getProxy().getScheduler().scheduleRepeating(() -> {
             if (running) return;
             running = true;
@@ -120,7 +113,6 @@ public final class PresenceMan extends Plugin {
     public static String getSkinURL(String xuid){
         return Gateway.getUrl() + ApiRequest.URI_GET_SKIN + xuid;
     }
-
     public static void setActivity(@NonNull ProxiedPlayer player, ApiActivity activity) {
         if (Utils.isFromSameHost(player.getAddress().getAddress())) return;
         if (!ProxyServer.getInstance().isRunning()) return;
@@ -131,7 +123,7 @@ public final class PresenceMan extends Plugin {
         new HashMap<String, String>(){{
             put("ip", player.getAddress().getHostName());
             put("xuid", player.getXuid());
-            put("server", PresenceMan.server);
+            put("server", player.getServerInfo().getServerName());
         }}.forEach(body::addProperty);
         if (activity != null) activity.setClient_id(Long.getLong(client_id));
         if (activity == null) body.addProperty("api_activity", (String)null);
@@ -154,11 +146,52 @@ public final class PresenceMan extends Plugin {
 
 
 
+
+    /**
+     * @hidden
+     */
+    public static void setActivity(@NonNull ProxiedPlayer player, ServerInfo serverInfo) {
+        if (Utils.isFromSameHost(player.getAddress().getAddress())) return;
+        if (!ProxyServer.getInstance().isRunning()) return;
+        if (!player.isConnected()) return;
+        if (player.getXuid().isEmpty()) return;
+        ServerPresence serverPresence = server_presences.stream().filter(p -> p.matchServerInfo(serverInfo)).toList().get(0);
+        if (serverPresence == null) serverPresence = ServerPresence.getDefault_presence();
+
+        JsonObject body = new JsonObject();
+        ServerPresence finalServerPresence = serverPresence;
+        new HashMap<String, String>(){{
+            put("ip", player.getAddress().getHostName());
+            put("xuid", player.getXuid());
+            put("server", finalServerPresence.getDisplay_name());
+        }}.forEach(body::addProperty);
+
+        ApiActivity activity = ApiActivity.defaults.activity();
+        activity.setClient_id(Long.parseLong(client_id));
+        activity.setDetails(serverPresence.getDetails());
+        activity.setState(serverPresence.getState());
+        activity.setLarge_icon_key(serverPresence.getLarge_image_key());
+        activity.setLarge_icon_text(serverPresence.getLarge_image_text());
+        System.out.println(activity);
+
+        body.add("api_activity", activity.serialize());
+
+        ApiRequest request = new ApiRequest(ApiRequest.URI_UPDATE_PRESENCE, body, true);
+        request.header("Token", token);
+
+        PresenceMan.runTask(new BackendRequest(
+                request.serialize(),
+                response -> {
+                    if (response.has("status") && response.get("status").getAsInt() == 200) PresenceMan.presences.put(player.getXuid(), activity);
+                    else PresenceMan.getInstance().getLogger().error("Failed to update presence for " + player.getName() + ": " + response.get("message").getAsString());
+                },
+                error -> {}
+        ));
+    }
     /**
      * @hidden
      */
     public static void offline(ProxiedPlayer player) {
-        if (!ProxyServer.getInstance().isRunning()) return;
         if (!player.isConnected()) return;
         if (player.getXuid().isEmpty()) return;
         JsonObject body = new JsonObject();

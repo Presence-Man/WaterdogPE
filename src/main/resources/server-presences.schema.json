@@ -1,0 +1,87 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"type": "object",
+	"properties": {
+		"disabled": {
+			"type": "array",
+			"description": "List of server-names were presences are disabled (Supports Java regex)",
+			"items": {
+				"type": "string",
+				"description": "Supports Java regex",
+				"examples": [
+					"citybuild-?\\d*",
+					"buildserver"
+				],
+				"default": []
+			},
+			"default": []
+		},
+		"default": {
+			"type": "object",
+			"properties": {
+				"state": {
+					"type": "string",
+					"description": "State for the presence"
+				},
+				"details": {
+					"type": "string",
+					"description": "Details for the presence"
+				},
+				"large_image_key": {
+					"type": "string",
+					"description": "The asset-name from https://discord.com/developers/applications/<CLIENT_ID>/rich-presence/assets"
+				},
+				"large_image_text": {
+					"type": "string",
+					"description": "The text over the big image for the presence"
+				}
+			},
+			"required": ["state", "details", "large_image_key", "large_image_text"]
+		},
+		"servers": {
+			"description": "Presences for downstream servers",
+			"type": "object",
+			"propertyNames": {
+				"type": "string",
+				"description": "Supports Java regex for server-names from WaterdogPE's config.yml",
+				"$ref": "#/properties/servers/additionalProperties"
+			},
+			"additionalProperties": {
+				"type": "object",
+				"properties": {
+					"server": {
+						"type": "string",
+						"description": "Replacement for {server} in state/details"
+					},
+					"state": {
+						"type": "string",
+						"description": "State for the presence",
+						"default": null
+					},
+					"details": {
+						"type": "string",
+						"description": "Details for the presence",
+						"default": null
+					},
+					"large_image_key": {
+						"type": "string",
+						"description": "The asset-name from https://discord.com/developers/applications/<CLIENT_ID>/rich-presence/assets",
+						"default": null
+					},
+					"large_image_text": {
+						"type": "string",
+						"description": "The text over the big image for the presence",
+						"default": null
+					},
+					"enabled": {
+						"description": "Enable/Disable this presence",
+						"type": "boolean",
+						"default": true
+					}
+				},
+				"required": ["server"]
+			}
+		}
+	},
+	"required": ["default", "servers"]
+}

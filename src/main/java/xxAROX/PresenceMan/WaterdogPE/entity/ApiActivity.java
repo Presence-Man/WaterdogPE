@@ -14,13 +14,10 @@
 
 package xxAROX.PresenceMan.WaterdogPE.entity;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import lombok.*;
 import lombok.experimental.Accessors;
-import xxAROX.PresenceMan.PowerNukkitX.PresenceMan;
-
-import javax.annotation.Nullable;
+import xxAROX.PresenceMan.WaterdogPE.PresenceMan;
 
 @NoArgsConstructor @AllArgsConstructor
 @ToString
@@ -59,39 +56,41 @@ public class ApiActivity {
         return json;
     }
 
-    public static ApiActivity deserialize(String input){
-        JsonObject json = new Gson().fromJson(input, JsonObject.class);
-        Long client_id = json.has("client_id") && !json.get("client_id").isJsonNull() ? json.get("client_id").getAsLong() : null;
-        String __type = (json.has("type") && !json.get("type").isJsonNull() ? json.get("type").getAsString() : ActivityType.PLAYING.toString()).toUpperCase();
-        ActivityType type = ActivityType.valueOf(__type);
-        String state = (json.has("state") && !json.get("state").isJsonNull() ? json.get("state").getAsString() : null);
-        String details = (json.has("details") && !json.get("details").isJsonNull() ? json.get("details").getAsString() : null);
-        Long end = (json.has("end") && !json.get("end").isJsonNull() ? json.get("end").getAsLong() : null);
-        String large_icon_key = (json.has("large_icon_key") && !json.get("large_icon_key").isJsonNull() ? json.get("large_icon_key").getAsString() : null);
-        String large_icon_text = (json.has("large_icon_text") && !json.get("large_icon_text").isJsonNull() ? json.get("large_icon_text").getAsString() : null);
-        Integer party_max_player_count = (json.has("party_max_player_count") && !json.get("party_max_player_count").isJsonNull() ? json.get("party_max_player_count").getAsInt() : null);
-        Integer party_player_count = (json.has("'party_player_count'") && !json.get("'party_player_count'").isJsonNull() ? json.get("'party_player_count'").getAsInt() : null);
-        return new ApiActivity(client_id, type, state, details, end, large_icon_key, large_icon_text, party_max_player_count, party_player_count);
-    }
-
-    public final static class Defaults {
-        public static ApiActivity default_activity(){
-            return PresenceMan.default_activity;
+    public final static class defaults {
+        public static ApiActivity activity(){
+            return new ApiActivity(
+                    Long.parseLong(PresenceMan.client_id),
+                    ActivityType.PLAYING,
+                    ServerPresence.getDefault_presence().getState(),
+                    ServerPresence.getDefault_presence().getDetails(),
+                    null,
+                    ServerPresence.getDefault_presence().getLarge_image_key(),
+                    ServerPresence.getDefault_presence().getLarge_image_text(),
+                    null,
+                    null
+            );
         }
 
         /**
          * time = System.currentTimeMillis(): long
+         * null|ApiActivity base
          */
-        public static ApiActivity ends_in(long time, @Nullable ApiActivity base){
-            if (base == null) base = default_activity();
+        public static ApiActivity ends_in(long time, ApiActivity base){
+            if (base == null) base = activity();
             base.end = time;
             return base;
         }
-        public static ApiActivity players_left(int current_players, int max_players, @Nullable ApiActivity base){
-            if (base == null) base = default_activity();
+        public static ApiActivity ends_in(long time){
+            return ends_in(time, null);
+        }
+        public static ApiActivity players_left(int current_players, int max_players, ApiActivity base){
+            if (base == null) base = activity();
             base.party_player_count = current_players;
             base.party_max_player_count = max_players;
             return base;
+        }
+        public static ApiActivity players_left(int current_players, int max_players){
+            return players_left(current_players, max_players, null);
         }
     }
 }

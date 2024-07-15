@@ -76,7 +76,7 @@ public final class FetchGatewayInformationTask extends Task {
                 ReconnectingTask.activate();
             } else {
                 ReconnectingTask.deactivate();
-                PresenceMan.getInstance().getLogger().info("This server will be displayed as '" + PresenceMan.server + "' in presences!");
+                PresenceMan.getInstance().getLogger().info("Presence-Man is active!");
             }
             callback.accept(code == 200);
         });

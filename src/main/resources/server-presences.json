@@ -1,0 +1,22 @@
+{
+	"disabled": [ "citybuild-?\\d*" ],
+	"default": {
+		"state": "Playing {server} on {network}",
+		"details": "",
+		"large_image_key": "presence-man",
+		"large_image_text": "{App.name} - v{App.version}"
+	},
+	"servers": {
+		"lobby-?\\d*": {
+			"server": "Lobby",
+			"details": "LOBBY!",
+			"large_image_key": "lobby"
+		},
+		"premiumlobby-?\\d*": {
+			"server": "Premium Lobby",
+			"enabled": false,
+			"details": "Premium lobbies are awesome!",
+			"large_image_key": "premiumlobby"
+		}
+	}
+}

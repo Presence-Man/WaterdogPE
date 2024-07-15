@@ -23,7 +23,7 @@ import java.util.Map;
 
 @Getter
 public final class ApiRequest {
-    private final Map<String, String> headers = new HashMap<String, String>(){{
+    private final Map<String, String> headers = new HashMap<>() {{
         put("Content-Type", "application/json");
     }};
     private JsonObject body;
@@ -40,7 +40,7 @@ public final class ApiRequest {
         this.uri = uri;
         this.body = body;
         this.postMethod = postMethod;
-        header("Serversoftware", ProxyServer.getInstance().getName());
+        header("Serversoftware", "WaterdogPE");
     }
 
     public String serialize() {
