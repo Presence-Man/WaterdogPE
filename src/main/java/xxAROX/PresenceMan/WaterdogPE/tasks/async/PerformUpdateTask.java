@@ -27,7 +27,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public final class PerformUpdateTask{
-    private static final String LATEST_VERSION_URL = "https://raw.githubusercontent.com/Presence-Man/PowerNukkitX/main/latest_version.txt";
+    private static final String LATEST_VERSION_URL = "https://raw.githubusercontent.com/Presence-Man/WaterdogPE/main/latest_version.txt";
 
     private final String currentVersion;
     private boolean notified = false;
