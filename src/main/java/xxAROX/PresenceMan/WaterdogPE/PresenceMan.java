@@ -125,7 +125,7 @@ public final class PresenceMan extends Plugin {
             put("xuid", player.getXuid());
             put("server", player.getServerInfo().getServerName());
         }}.forEach(body::addProperty);
-        if (activity != null) activity.setClient_id(Long.getLong(client_id));
+        if (activity != null) activity.setClient_id(Long.parseLong(client_id));
         if (activity == null) body.addProperty("api_activity", (String)null);
         else body.add("api_activity", activity.serialize());
 

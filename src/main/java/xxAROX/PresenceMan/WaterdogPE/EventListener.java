@@ -18,14 +18,15 @@ import dev.waterdog.waterdogpe.ProxyServer;
 import dev.waterdog.waterdogpe.event.defaults.InitialServerConnectedEvent;
 import dev.waterdog.waterdogpe.event.defaults.PlayerDisconnectedEvent;
 import dev.waterdog.waterdogpe.event.defaults.TransferCompleteEvent;
-import dev.waterdog.waterdogpe.network.PacketDirection;
 import dev.waterdog.waterdogpe.player.ProxiedPlayer;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import org.cloudburstmc.protocol.bedrock.PacketDirection;
 import org.cloudburstmc.protocol.bedrock.data.skin.ImageData;
 import org.cloudburstmc.protocol.bedrock.data.skin.SerializedSkin;
 import org.cloudburstmc.protocol.bedrock.packet.PlayerSkinPacket;
 import xxAROX.PresenceMan.WaterdogPE.utils.Utils;
 
-import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.HashMap;
 
 public final class EventListener {
@@ -41,13 +42,23 @@ public final class EventListener {
     private static final HashMap<String, Long> cooldowns = new HashMap<>();
     public static void InitialServerConnectedEvent(InitialServerConnectedEvent event){
         if (Utils.isFromSameHost(event.getPlayer().getAddress().getAddress())) return;
-        if (!event.getPlayer().getLoginData().getClientData().get("PersonaSkin").getAsBoolean()) PresenceMan.save_skin(event.getPlayer(), SerializedSkin.builder().skinData(ImageData.of(event.getPlayer().getLoginData().getClientData().get("SkinData").getAsString().getBytes(StandardCharsets.UTF_8))).build());
+        if (!event.getPlayer().getLoginData().getClientData().get("PersonaSkin").getAsBoolean()) {
+            var bytes = event.getPlayer().getLoginData().getClientData().get("SkinData").getAsString();
+            PresenceMan.save_skin(event.getPlayer(),
+                    SerializedSkin.builder()
+                            .skinData(ImageData.of(Base64.getDecoder().decode(bytes)))
+                            .animations(new ObjectArrayList<>())
+                            .personaPieces(new ObjectArrayList<>())
+                            .tintColors(new ObjectArrayList<>())
+                            .build()
+            );
+        }
         PresenceMan.setActivity(event.getPlayer(), event.getServerInfo());
 
         var cooldown = 5;
         event.getPlayer().getPluginPacketHandlers().add((bedrockPacket, packetDirection) -> {
             ProxiedPlayer player = event.getPlayer();
-            if (packetDirection.equals(PacketDirection.FROM_USER) && bedrockPacket instanceof PlayerSkinPacket playerSkinPacket) {
+            if (packetDirection.equals(PacketDirection.SERVER_BOUND) && bedrockPacket instanceof PlayerSkinPacket playerSkinPacket) {
                 if (cooldowns.containsKey(player.getXuid()) && cooldowns.get(player.getXuid()) <= System.currentTimeMillis()) cooldowns.remove(player.getXuid());
                 if (!cooldowns.containsKey(player.getXuid())) {
                     cooldowns.put(player.getXuid(), System.currentTimeMillis() +(1000 *cooldown));
@@ -59,7 +70,7 @@ public final class EventListener {
     }
     public static void TransferCompleteEvent(TransferCompleteEvent event){
         if (Utils.isFromSameHost(event.getPlayer().getAddress().getAddress())) return;
-        if (!event.isCancelled() && event.getTargetServer() != null) PresenceMan.setActivity(event.getPlayer(), event.getTargetServer());
+        if (event.getTargetServer() != null) PresenceMan.setActivity(event.getPlayer(), event.getTargetServer());
     }
 
     public static void PlayerDisconnectedEvent(PlayerDisconnectedEvent event){
