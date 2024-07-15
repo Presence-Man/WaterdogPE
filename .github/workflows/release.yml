@@ -38,8 +38,8 @@ jobs:
       - name: "Rename JAR"
         run: |
           cd target/
-          cp PowerNukkitX-1.0-SNAPSHOT.jar Presence-Man-PowerNukkitX-v${{ steps.metadata.outputs.VERSION }}.jar
-          cp PowerNukkitX-1.0-SNAPSHOT.jar Presence-Man-PowerNukkitX.jar
+          cp WaterdogPE-2.0-SNAPSHOT.jar Presence-Man-WaterdogPE-v${{ steps.metadata.outputs.VERSION }}.jar
+          cp WaterdogPE-2.0-SNAPSHOT.jar Presence-Man-WaterdogPE.jar
           cd ../
 
       - name: "Create Release"

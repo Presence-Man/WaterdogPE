@@ -38,7 +38,7 @@ jobs:
       - name: "Rename JAR"
         run: |
           cd target/
-          cp PowerNukkitX-1.0-SNAPSHOT.jar Presence-Man-PowerNukkitX.jar
+          cp WaterdogPE-2.0-SNAPSHOT.jar Presence-Man-WaterdogPE.jar
           cd ../
 
       - name: "Create Release"
@@ -48,7 +48,7 @@ jobs:
           automatic_release_tag: "dev"
           prerelease: true
           title: "Development release v${{ steps.metadata.outputs.VERSION }}"
-          files: "target/Presence-Man-PowerNukkitX.jar"
+          files: "target/Presence-Man-WaterdogPE.jar"
 
       - name: "Create latest_version-dev.txt"
         run: "echo \"${{ steps.metadata.outputs.VERSION }}\" > latest_version-dev.txt"
