@@ -74,9 +74,7 @@ public final class EventListener {
     }
 
     private static void PlayerDisconnectedEvent(PlayerDisconnectedEvent event){
-        System.out.println("isFromSameHost: " + Utils.isFromSameHost(event.getPlayer().getAddress().getAddress()));
         if (Utils.isFromSameHost(event.getPlayer().getAddress().getAddress())) return;
         PresenceMan.offline(event.getPlayer());
-        System.out.println("Should work!");
     }
 }
