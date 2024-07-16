@@ -50,7 +50,7 @@ public final class PresenceMan extends Plugin {
     }
 
     private static String token = "undefined";
-    public static String client_id = null;
+    public static Long client_id = null;
     public static List<ServerPresence> server_presences = new ArrayList<>();
 
     public static Map<String, ApiActivity> presences = new HashMap<>();
@@ -72,7 +72,8 @@ public final class PresenceMan extends Plugin {
 
         Configuration config = this.getConfig();
         token = (String) Utils.getconfigvalue(config, "token");
-        client_id = (String) Utils.getconfigvalue(config, "client_id", "", client_id);
+        client_id = Long.parseLong((String) Utils.getconfigvalue(config, "client_id", "", client_id));
+        getLogger().info("Loaded client_id: " + client_id);
     }
     public static boolean running = false;
     @Override public void onEnable() {
@@ -89,8 +90,7 @@ public final class PresenceMan extends Plugin {
     }
 
     private static void runTask(BackendRequest task){
-        if (!ProxyServer.getInstance().isRunning()) task.unga_bunga(false);
-        else task.unga_bunga(true);
+        task.unga_bunga(ProxyServer.getInstance().isRunning());
     }
 
     public static String getHeadURL(String xuid, boolean gray, Integer size) {
@@ -125,7 +125,7 @@ public final class PresenceMan extends Plugin {
             put("xuid", player.getXuid());
             put("server", player.getServerInfo().getServerName());
         }}.forEach(body::addProperty);
-        if (activity != null) activity.setClient_id(Long.parseLong(client_id));
+        if (activity != null) activity.setClient_id(client_id);
         if (activity == null) body.addProperty("api_activity", (String)null);
         else body.add("api_activity", activity.serialize());
 
@@ -167,12 +167,11 @@ public final class PresenceMan extends Plugin {
         }}.forEach(body::addProperty);
 
         ApiActivity activity = ApiActivity.defaults.activity();
-        activity.setClient_id(Long.parseLong(client_id));
+        activity.setClient_id(client_id);
         activity.setDetails(serverPresence.getDetails());
         activity.setState(serverPresence.getState());
         activity.setLarge_icon_key(serverPresence.getLarge_image_key());
         activity.setLarge_icon_text(serverPresence.getLarge_image_text());
-        System.out.println(activity);
 
         body.add("api_activity", activity.serialize());
 

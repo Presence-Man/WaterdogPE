@@ -44,7 +44,7 @@ public class ApiActivity {
 
     public JsonObject serialize(){
         JsonObject json = new JsonObject();
-        json.addProperty("client_id", client_id);
+        json.addProperty("client_id", String.valueOf(client_id));
         json.addProperty("type", type.toString());
         json.addProperty("state", state);
         json.addProperty("details", details);
@@ -59,7 +59,7 @@ public class ApiActivity {
     public final static class defaults {
         public static ApiActivity activity(){
             return new ApiActivity(
-                    Long.parseLong(PresenceMan.client_id),
+                    PresenceMan.client_id,
                     ActivityType.PLAYING,
                     ServerPresence.getDefault_presence().getState(),
                     ServerPresence.getDefault_presence().getDetails(),
