@@ -191,8 +191,6 @@ public final class PresenceMan extends Plugin {
      * @hidden
      */
     public static void offline(ProxiedPlayer player) {
-        if (!player.isConnected()) return;
-        if (player.getXuid().isEmpty()) return;
         JsonObject body = new JsonObject();
         new HashMap<String, String>(){{
             put("ip", player.getAddress().getHostName());

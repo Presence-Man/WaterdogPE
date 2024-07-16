@@ -70,6 +70,7 @@ public final class BackendRequest {
     private void onCompletion(String str) {
         ApiRequest request = ApiRequest.deserialize(this.request);
         JsonObject results = PresenceMan.GSON.fromJson(str, JsonObject.class);
+        System.out.println(results);
 
         if (results != null) {
             int code = results.get("status").getAsInt();

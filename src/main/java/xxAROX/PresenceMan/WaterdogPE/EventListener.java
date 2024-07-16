@@ -40,7 +40,7 @@ public final class EventListener {
     }
 
     private static final HashMap<String, Long> cooldowns = new HashMap<>();
-    public static void InitialServerConnectedEvent(InitialServerConnectedEvent event){
+    private static void InitialServerConnectedEvent(InitialServerConnectedEvent event){
         if (Utils.isFromSameHost(event.getPlayer().getAddress().getAddress())) return;
         if (!event.getPlayer().getLoginData().getClientData().get("PersonaSkin").getAsBoolean()) {
             var bytes = event.getPlayer().getLoginData().getClientData().get("SkinData").getAsString();
@@ -68,13 +68,15 @@ public final class EventListener {
             return null;
         });
     }
-    public static void TransferCompleteEvent(TransferCompleteEvent event){
+    private static void TransferCompleteEvent(TransferCompleteEvent event){
         if (Utils.isFromSameHost(event.getPlayer().getAddress().getAddress())) return;
         if (event.getTargetServer() != null) PresenceMan.setActivity(event.getPlayer(), event.getTargetServer());
     }
 
-    public static void PlayerDisconnectedEvent(PlayerDisconnectedEvent event){
+    private static void PlayerDisconnectedEvent(PlayerDisconnectedEvent event){
+        System.out.println("isFromSameHost: " + Utils.isFromSameHost(event.getPlayer().getAddress().getAddress()));
         if (Utils.isFromSameHost(event.getPlayer().getAddress().getAddress())) return;
         PresenceMan.offline(event.getPlayer());
+        System.out.println("Should work!");
     }
 }
