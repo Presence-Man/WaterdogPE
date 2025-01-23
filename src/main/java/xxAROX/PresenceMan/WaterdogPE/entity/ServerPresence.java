@@ -56,16 +56,8 @@ public final class ServerPresence {
 
     public boolean matchServerInfo(ServerInfo serverInfo) {
         if (serverInfo == null) return false;
-        System.out.println("....................................");
-        System.out.println(this);
-        System.out.println(serverInfo.getServerName()+".equalsIgnoreCase("+key+"):");
-        System.out.println(serverInfo.getServerName().equalsIgnoreCase(key));
-        System.out.println("pattern.matcher("+serverInfo.getServerName()+").matches():");
-        System.out.println(pattern.matcher(serverInfo.getServerName()).matches());
-        System.out.println("....................................");
-
         if (pattern == null) return serverInfo.getServerName().equalsIgnoreCase(key);
-        else return pattern.matcher(serverInfo.getServerName().toLowerCase()).matches();
+        else return pattern.matcher(serverInfo.getServerName()).matches();
     }
 
     public void setPattern(String regex) {
