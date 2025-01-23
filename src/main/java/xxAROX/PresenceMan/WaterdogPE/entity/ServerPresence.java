@@ -54,6 +54,10 @@ public final class ServerPresence {
     }
 
     public boolean matchServerInfo(ServerInfo serverInfo) {
+        System.out.println(serverInfo.getServerName() + " === " + this.key.toLowerCase() + ":");
+        System.out.println(serverInfo.getServerName().toLowerCase().equals(this.key.toLowerCase()));
+        System.out.println("pattern.matcher("+serverInfo.getServerName().toLowerCase()+").matches():");
+        System.out.println(pattern.matcher(serverInfo.getServerName().toLowerCase()).matches());
         return serverInfo.getServerName().toLowerCase().equals(this.key.toLowerCase()) || pattern.matcher(serverInfo.getServerName().toLowerCase()).matches();
     }
 
