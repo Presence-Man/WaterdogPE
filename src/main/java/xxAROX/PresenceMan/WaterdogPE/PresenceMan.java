@@ -157,7 +157,10 @@ public final class PresenceMan extends Plugin {
         if (player.getXuid().isEmpty()) return;
         ServerPresence serverPresence = server_presences.stream().filter(p -> p.matchServerInfo(serverInfo)).toList().get(0);
         if (serverPresence == null) serverPresence = ServerPresence.getDefault_presence();
-
+        if (!serverPresence.isEnabled()) {
+            offline(player);
+            return;
+        }
         JsonObject body = new JsonObject();
         ServerPresence finalServerPresence = serverPresence;
         new HashMap<String, String>(){{
