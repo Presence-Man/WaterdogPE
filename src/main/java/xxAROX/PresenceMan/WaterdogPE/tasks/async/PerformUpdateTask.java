@@ -65,7 +65,7 @@ public final class PerformUpdateTask{
             if (latest != null) {
                 if (!notified) {
                     PresenceMan.getInstance().getLogger().warn("Your version of Presence-Man is out of date. To avoid issues please update it to the latest version!");
-                    PresenceMan.getInstance().getLogger().warn("Download: " + Gateway.getUrl() + "/downloads/nukkit");
+                    PresenceMan.getInstance().getLogger().warn("Download: " + Gateway.getUrl() + "/downloads/waterdogpe");
                     notified = true;
                 }
             }
