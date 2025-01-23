@@ -25,7 +25,6 @@ import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -43,8 +42,9 @@ public final class ServerPresence {
     private String large_image_text = null;
 
     private ServerPresence(String key, JsonObject json) {
-        pattern = Pattern.compile(key);
         this.key = key;
+        try { pattern = Pattern.compile(key); }
+        catch (IllegalArgumentException e) { pattern = null; }
         display_name = !json.has("server") ? null : json.get("server").getAsString();
         enabled = !json.has("enabled") || json.get("enabled").getAsBoolean();
         state = !json.has("state") ? default_presence.state : json.get("state").getAsString();
@@ -54,16 +54,21 @@ public final class ServerPresence {
     }
 
     public boolean matchServerInfo(ServerInfo serverInfo) {
-        System.out.println(serverInfo.getServerName() + " === " + this.key.toLowerCase() + ":");
-        System.out.println(serverInfo.getServerName().toLowerCase().equals(this.key.toLowerCase()));
-        System.out.println("pattern.matcher("+serverInfo.getServerName().toLowerCase()+").matches():");
-        System.out.println(pattern.matcher(serverInfo.getServerName().toLowerCase()).matches());
-        return serverInfo.getServerName().toLowerCase().equals(this.key.toLowerCase()) || pattern.matcher(serverInfo.getServerName().toLowerCase()).matches();
+        if (serverInfo == null) return false;
+        System.out.println("....................................");
+        System.out.println(this);
+        System.out.println(serverInfo.getServerName()+".equalsIgnoreCase("+key+"):");
+        System.out.println(serverInfo.getServerName().equalsIgnoreCase(key));
+        System.out.println("pattern.matcher("+serverInfo.getServerName()+").matches():");
+        System.out.println(pattern.matcher(serverInfo.getServerName()).matches());
+        System.out.println("....................................");
+
+        if (pattern == null) return serverInfo.getServerName().equalsIgnoreCase(key);
+        else return pattern.matcher(serverInfo.getServerName().toLowerCase()).matches();
     }
 
-    public void setPattern(String key) {
-        this.key = key;
-        pattern = Pattern.compile(key);
+    public void setPattern(String regex) {
+        pattern = Pattern.compile(regex);
     }
 
     public static List<ServerPresence> load(JsonObject jsonRoot) {
