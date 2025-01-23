@@ -1,5 +1,8 @@
 {
-	"disabled": [ "citybuild-?\\d*" ],
+	"$schema": "server-presences.schema.json",
+	"disabled": [
+		"citybuild-?\\d*"
+	],
 	"default": {
 		"state": "Playing {server} on {network}",
 		"details": "",
