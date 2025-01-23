@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 @NoArgsConstructor
 @Getter @Setter @ToString
@@ -44,7 +45,7 @@ public final class ServerPresence {
     private ServerPresence(String key, JsonObject json) {
         this.key = key;
         try { pattern = Pattern.compile(key); }
-        catch (IllegalArgumentException e) { pattern = null; }
+        catch (PatternSyntaxException e) { pattern = null; }
         display_name = !json.has("server") ? null : json.get("server").getAsString();
         enabled = !json.has("enabled") || json.get("enabled").getAsBoolean();
         state = !json.has("state") ? default_presence.state : json.get("state").getAsString();
