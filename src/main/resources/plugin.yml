@@ -1,5 +1,5 @@
 name: "Presence-Man"
-version: "1.0.0"
+version: "1.0.1"
 api: [ "2.0.0" ]
 main: xxAROX.PresenceMan.WaterdogPE.PresenceMan
 description: "Presence-Man client for WaterdogPE to support this proxy-network in discord rich-presences."
