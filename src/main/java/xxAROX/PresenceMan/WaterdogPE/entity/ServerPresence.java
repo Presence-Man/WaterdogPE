@@ -33,6 +33,7 @@ import java.util.regex.Pattern;
 @Getter @Setter @ToString
 public final class ServerPresence {
     @Getter private static ServerPresence default_presence = new ServerPresence();
+    private String key;
     private String display_name = null;
     private Pattern pattern = null;
     private boolean enabled = true;
@@ -41,8 +42,9 @@ public final class ServerPresence {
     private String large_image_key = null;
     private String large_image_text = null;
 
-    private ServerPresence(String regex, JsonObject json) {
-        pattern = Pattern.compile(regex);
+    private ServerPresence(String key, JsonObject json) {
+        pattern = Pattern.compile(key);
+        this.key = key;
         display_name = !json.has("server") ? null : json.get("server").getAsString();
         enabled = !json.has("enabled") || json.get("enabled").getAsBoolean();
         state = !json.has("state") ? default_presence.state : json.get("state").getAsString();
@@ -52,11 +54,12 @@ public final class ServerPresence {
     }
 
     public boolean matchServerInfo(ServerInfo serverInfo) {
-        return pattern.matcher(serverInfo.getServerName().toLowerCase(Locale.ROOT)).matches();
+        return serverInfo.getServerName().toLowerCase().equals(this.key.toLowerCase()) || pattern.matcher(serverInfo.getServerName().toLowerCase()).matches();
     }
 
-    public void setPattern(String regex) {
-        pattern = Pattern.compile(regex);
+    public void setPattern(String key) {
+        this.key = key;
+        pattern = Pattern.compile(key);
     }
 
     public static List<ServerPresence> load(JsonObject jsonRoot) {
